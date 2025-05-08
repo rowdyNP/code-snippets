@@ -13,7 +13,7 @@ ORDER BY table_name DESC;
 ```
 
 ## Fixing Modified Dates
-_If modified dates ended up earlier than published dates, these queries can quickly make them match the published dates.  As always, be sure to update the prefix._
+_If modified dates ended up earlier than published dates, these queries can quickly make them match the published dates.  **As always, be sure to update the prefix.**_
 
 _Provide a CSV list of Post IDs to edit:_
 ```
