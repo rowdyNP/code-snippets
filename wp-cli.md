@@ -110,3 +110,9 @@ Reset a single user's password & display the new password (and don't send an ema
 ```
 wp user reset-password username --show-password --skip-email
 ```
+## List Info
+
+Get a CSV (post_title,post_date,ID) of published posts inside a certain category.
+```
+wp post list --post_type=post --post_status=publish --fields=post_title,post_date,ID --format=csv --no-header --tax_query='[{"taxonomy":"category","field":"slug","terms":"<your-category>"}]'
+```
