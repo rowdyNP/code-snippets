@@ -82,33 +82,55 @@ You can dynamically use the existing DB Prefix by replacing the `wp_` table pref
 
 ## Malware Cleanup
 
-Check core & plugin integrity:
+**_Not all client sites use the latest WordPress version or the default `en_US` locale. Use these commands to set currently installed WordPress version and active locale as variables for core reinstall commands:_**
+```
+WP_VERSION="$(wp core version)"
+WP_LOCALE="$(wp language core list --status=active --field=language)"
+```
+
+Check core & (wordpress.org hosted) plugin integrity:
 ```
 wp core verify-checksums
 wp plugin verify-checksums --all --strict
 ```
 
-Quickly reinstall latest version of core files:
-
+### Core Replacement
+Quickly reinstall latest version of core:
 ```
-wp core download --force --skip-content
+wp core download --force --skip-content --locale="$WP_LOCALE"
 ```
 
-If infected/extra files found in `wp-admin` or `wp-includes`, quickly wipe those folders and then immediately reinstall. If working on a production site, run the above reinstall first to be sure that it will work.
-
+If infected/extra files are found in `wp-admin` or `wp-includes`, wipe those folders and then immediately reinstall. If working on a production site, run the above reinstall first to be sure that it will work:
 ```
-rm -rf wp-admin wp-includes
-wp core download --force --skip-content
+rm -rf wp-admin wp-includes && wp core download --force --skip-content
+```
+
+Reinstall the currently installed WordPress core version and active locale:
+```
+wp core download --force --skip-content --version="$WP_VERSION" --locale="$WP_LOCALE"
+```
+
+Reinstall a specific WordPress core version and locale:
+```
+wp core download --force --skip-content --version="7.0" --locale="$WP_LOCALE"
+```
+
+### Plugin Replacement
+Replacing non checksum matching wordpress.org plugins can be done with this command:
+```
+PLUGIN_SLUG="plugin-directory-slug" && PLUGIN_VERSION="$(wp plugin get "$PLUGIN_SLUG" --field=version)" && wp plugin install "$PLUGIN_SLUG" --force --version="$PLUGIN_VERSION"
+```
+Reinstall all plugins to current versions (premium plugins will error, but not prevent the process):
+```
+wp plugin list --field=name | xargs -I % sh -c 'v=$(wp plugin get "%" --field=version) && wp plugin install "%" --force --version="$v"'
 ```
 
 Reset **all** user passwords. Add `--skip-email` to not send an email notification.
-
 ```
 wp user reset-password $(wp user list --field=user_login)
 ```
 
 Reset administrator and/or editor passwords. Add `--skip-email` to not send an email notification.
-
 ```
 wp user reset-password $(wp user list --field=user_login --role=administrator)
 wp user reset-password $(wp user list --field=user_login --role=editor)
@@ -116,12 +138,11 @@ wp user reset-password $(wp user list --role="administrator" --field=user_login 
 ```
 
 Reset a single user's password & display the new password (and don't send an email).
-
 ```
 wp user reset-password username --show-password --skip-email
 ```
-## List Info
 
+## List Info
 Get a CSV (post_title,post_date,ID) of published posts inside a certain category.
 ```
 wp post list --post_type=post --post_status=publish --fields=post_title,post_date,ID --format=csv --no-header --tax_query='[{"taxonomy":"category","field":"slug","terms":"<your-category>"}]'
