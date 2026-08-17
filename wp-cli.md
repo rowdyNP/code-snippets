@@ -1,9 +1,10 @@
 # WP-CLI Commands
 
-## Full list of built-in commands
+The full list of built-in WP-CLI commands and examples can be found here:
+
 https://developer.wordpress.org/cli/commands/
 
-## WP-CLI not installed? Download it and run it directly from the `phar` file.
+## WP-CLI not installed? Download and run it directly from the `phar` file
 
 First, download wp-cli.phar using wget or curl. For example:
 ```
@@ -16,17 +17,18 @@ php wp-cli.phar --info
 If so, you can run any command using `php wp-cli.phar` instead of the `wp` shortcut.
 https://make.wordpress.org/cli/handbook/installing/
 
-You can also set an alias for the shell session:
+You can also set an alias for the current shell session:
 ```
-alias wp='php /path/to/wp-cli.phar'
-alias wp='php $(pwd)/wp-cli.phar'
+alias wp="php /path/to/wp-cli.phar"
+alias wp="php $(pwd)/wp-cli.phar"
 ```
 
 ## Database Commands
-_WordPress sites may use a unique DB Prefix. This sets the existing prefix as a variable for all future commands in the same session:_
+WordPress sites may use a unique DB Prefix. This sets the existing prefix as a variable for all future commands in the same session:
 ```
 PFX="$(wp db prefix)"
 ```
+Now instead of manually typing out the custom prefix, you can use `$(PFX)` for table names (`wp_options` becomes `$(PFX)options`).
 
 ### Export Database
 ```
@@ -34,8 +36,9 @@ wp db export
 ```
 
 ### Search & Replace
-_Append `--dry-run` first, then if all looks good, run the command without it._
-_To avoid malformed URLs, have both URLs either include or exclude the trailing slash!_
+Append `--dry-run` first, then if all looks good, run the command without it.
+
+To avoid malformed URLs, have both URLs include or exclude the trailing slash!
 
 **_Basic search and replace in all tables. Useful for http->https conversion._**
 ```
@@ -73,16 +76,16 @@ Note, also, the `\1\2` in the replacement - this will carry over the slug _and_ 
 
 If there are subcategories, be sure to replace them first!
 
-The sample code below searches only in `wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options` to speed the process.
+The sample code below searches only in `$(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options` to speed the process.
 ```
-wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
-wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
+PFX="$(wp db prefix)"
+wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" $(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options --regex --skip-columns=guid --dry-run
+wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" $(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options --regex --skip-columns=guid --dry-run
 ```
-You can dynamically use the existing DB Prefix by replacing the `wp_` table prefix above with `$(PFX)` (after running `PFX="$(wp db prefix)"`)
 
 ## Malware Cleanup
 
-**_Not all client sites use the latest WordPress version or the default `en_US` locale. Use these commands to set currently installed WordPress version and active locale as variables for core reinstall commands:_**
+Not all client sites use the latest WordPress version or the default `en_US` locale. Use these commands to set currently installed WordPress version and active locale as variables for core reinstall commands:
 ```
 WP_VERSION="$(wp core version)"
 WP_LOCALE="$(wp language core list --status=active --field=language)"
@@ -116,33 +119,57 @@ wp core download --force --skip-content --version="7.0" --locale="$WP_LOCALE"
 ```
 
 ### Plugin Replacement
-Replacing non checksum matching wordpress.org plugins can be done with this command:
+Replacing non checksum matching wordpress.org plugins can be done with this command (Replace `<SLUG>` before running):
 ```
-PLUGIN_SLUG="plugin-directory-slug" && PLUGIN_VERSION="$(wp plugin get "$PLUGIN_SLUG" --field=version)" && wp plugin install "$PLUGIN_SLUG" --force --version="$PLUGIN_VERSION"
+PLUGIN_SLUG="<SLUG>" && PLUGIN_VERSION="$(wp plugin get "$PLUGIN_SLUG" --field=version)" && wp plugin install "$PLUGIN_SLUG" --force --version="$PLUGIN_VERSION"
 ```
 Reinstall all plugins to current versions (premium plugins will error, but not prevent the process):
 ```
 wp plugin list --field=name | xargs -I % sh -c 'v=$(wp plugin get "%" --field=version) && wp plugin install "%" --force --version="$v"'
 ```
 
-Reset **all** user passwords. Add `--skip-email` to not send an email notification.
+### User Actions
+List existing (and potentially hidden) users:
 ```
-wp user reset-password $(wp user list --field=user_login)
+wp user list --role=administrator
+wp user list --role=editor
+wp user list --role=author
 ```
 
-Reset administrator and/or editor passwords. Add `--skip-email` to not send an email notification.
+View active session token data for a specific user:
+```
+wp user session list <USER|ID> --fields=login_time,expiration_time,ip,ua
+```
+
+Kill all sessions for a specific user:
+```
+wp user session destroy <USER|ID> --all
+```
+
+Reset **all** user passwords. Add `--skip-email` to not send an email notification:
+```
+wp user reset-password $(wp user list --field=ID)
+```
+
+Reset administrator and/or editor passwords. Add `--skip-email` to not send an email notification:
 ```
 wp user reset-password $(wp user list --field=user_login --role=administrator)
-wp user reset-password $(wp user list --field=user_login --role=editor)
-wp user reset-password $(wp user list --role="administrator" --field=user_login && wp user list --role="editor" --field=user_login)
+wp user reset-password $(wp user list --role=administrator --field=ID && wp user list --role=editor --field=ID)
 ```
 
-Reset a single user's password & display the new password (and don't send an email).
+Reset and display a single user's password without sending an email:
 ```
-wp user reset-password username --show-password --skip-email
+wp user reset-password <USER|ID> --show-password --skip-email
+```
+
+Refresh/Shuffle wp-config.php salts (Logs out all users):
+```
+wp config shuffle-salts
 ```
 
 ## List Info
+See the [Create CSV Reports with WP-CLI](https://app.getguru.com/card/ceybrzAi/Create-CSV-Reports-with-WPCLI) Guru card for examples and existing report templates.
+
 Get a CSV (post_title,post_date,ID) of published posts inside a certain category.
 ```
 wp post list --post_type=post --post_status=publish --fields=post_title,post_date,ID --format=csv --no-header --tax_query='[{"taxonomy":"category","field":"slug","terms":"<your-category>"}]'
