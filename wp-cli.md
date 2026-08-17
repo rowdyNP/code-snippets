@@ -1,13 +1,41 @@
 # WP-CLI Commands
 
-## Export Database
+## Full list of built-in commands
+https://developer.wordpress.org/cli/commands/
 
+## WP-CLI not installed? Download it and run it directly from the `phar` file.
+
+First, download wp-cli.phar using wget or curl. For example:
+```
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+```
+Then, check if it works:
+```
+php wp-cli.phar --info
+```
+If so, you can run any command using `php wp-cli.phar` instead of the `wp` shortcut.
+https://make.wordpress.org/cli/handbook/installing/
+
+You can also set an alias for the shell session:
+```
+alias wp='php /path/to/wp-cli.phar'
+alias wp='php $(pwd)/wp-cli.phar'
+```
+
+## Database Commands
+_WordPress sites may use a unique DB Prefix. This sets the existing prefix as a variable for all future commands in the same session:_
+```
+PFX="$(wp db prefix)"
+```
+
+### Export Database
 ```
 wp db export
 ```
 
-## Search & Replace
+### Search & Replace
 _Append `--dry-run` first, then if all looks good, run the command without it._
+_To avoid malformed URLs, have both URLs either include or exclude the trailing slash!_
 
 **_Basic search and replace in all tables. Useful for http->https conversion._**
 ```
@@ -17,7 +45,7 @@ wp search-replace "http://domain.com" "https://domain.com" --skip-columns=guid -
 ```
 wp search-replace "https://domain.com/([0-9]{4})/([0-9]{2})/([0-9]{2})/" "https://domain.com/" --regex --skip-columns=guid --dry-run
 ```
-**_Remove `/year/month/` from hardcodedlinks. Make sure all links are https: first._**
+**_Remove `/year/month/` from hardcoded links. Make sure all links are https: first._**
 ```
 wp search-replace "https://domain.com/([0-9]{4})/([0-9]{2})/" "https://domain.com/" --regex --skip-columns=guid --dry-run
 ```
@@ -50,25 +78,7 @@ The sample code below searches only in `wp_posts wp_postmeta wp_comments wp_comm
 wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
 wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
 ```
-
-## Full list of built-in commands
-https://developer.wordpress.org/cli/commands/
-
-## WP-CLI not installed? Download it and run it directly from the `phar` file.
-
-First, download wp-cli.phar using wget or curl. For example:
-
-```
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-```
-
-Then, check if it works:
-```
-php wp-cli.phar --info
-```
-
-If so, you can run any command using `php wp-cli.phar` instead of the `wp` shortcut.
-https://make.wordpress.org/cli/handbook/installing/
+You can dynamically use the existing DB Prefix by replacing the `wp_` table prefix above with `$(PFX)` (after running `PFX="$(wp db prefix)"`)
 
 ## Malware Cleanup
 
