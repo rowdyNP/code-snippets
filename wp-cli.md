@@ -118,6 +118,16 @@ Reinstall a specific WordPress core version and locale:
 wp core download --force --skip-content --version="7.0" --locale="$WP_LOCALE"
 ```
 
+### Plugin Replacement
+Replacing non checksum matching wordpress.org plugins can be done with this command (Replace `<SLUG>` before running):
+```
+PLUGIN_SLUG="<SLUG>" && PLUGIN_VERSION="$(wp plugin get "$PLUGIN_SLUG" --field=version)" && wp plugin install "$PLUGIN_SLUG" --force --version="$PLUGIN_VERSION"
+```
+Reinstall all plugins to current versions (premium plugins will error, but not prevent the process):
+```
+wp plugin list --field=name | xargs -I % sh -c 'v=$(wp plugin get "%" --field=version) && wp plugin install "%" --force --version="$v"'
+```
+
 Reset **all** user passwords. Add `--skip-email` to not send an email notification.
 
 ```
