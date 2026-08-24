@@ -1,5 +1,28 @@
 # WP-CLI Commands
 
+The full list of built-in WP-CLI commands and examples can be found here:
+
+https://developer.wordpress.org/cli/commands/
+
+## WP-CLI not installed? Download and run it directly from the `phar` file
+
+First, download wp-cli.phar using wget or curl. For example:
+```
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+```
+Then, check if it works:
+```
+php wp-cli.phar --info
+```
+If so, you can run any command using `php wp-cli.phar` instead of the `wp` shortcut.
+https://make.wordpress.org/cli/handbook/installing/
+
+You can also set an alias for the current shell session:
+```
+alias wp="php /path/to/wp-cli.phar"
+alias wp="php $(pwd)/wp-cli.phar"
+```
+
 ## Export Database
 
 ```
@@ -50,25 +73,6 @@ The sample code below searches only in `wp_posts wp_postmeta wp_comments wp_comm
 wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
 wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2"wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
 ```
-
-## Full list of built-in commands
-https://developer.wordpress.org/cli/commands/
-
-## WP-Cli not installed? Download it and run it directly from the Phar file.
-
-First, download wp-cli.phar using wget or curl. For example:
-
-```
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-```
-
-Then, check if it works:
-```
-php wp-cli.phar --info
-```
-
-If so, you can run any command using `php wp-cli.phar` instead of the `wp` shortcut.
-https://make.wordpress.org/cli/handbook/installing/
 
 ## Malware Cleanup
 
