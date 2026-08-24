@@ -168,6 +168,7 @@ wp config shuffle-salts
 ```
 
 ## List Info
+See the [Create CSV Reports with WP-CLI](https://app.getguru.com/card/ceybrzAi/Create-CSV-Reports-with-WPCLI) Guru card for examples and existing report templates.
 
 Get a CSV (post_title,post_date,ID) of published posts inside a certain category.
 ```
