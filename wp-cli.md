@@ -23,13 +23,19 @@ alias wp="php /path/to/wp-cli.phar"
 alias wp="php $(pwd)/wp-cli.phar"
 ```
 
-## Export Database
+## Database Commands
+WordPress sites may use a unique DB Prefix. This sets the existing prefix as a variable for all future commands in the same session:
+```
+PFX="$(wp db prefix)"
+```
+Now instead of manually typing out the custom prefix, you can use `$(PFX)` for table names (`wp_options` becomes `$(PFX)options`).
 
+### Export Database
 ```
 wp db export
 ```
 
-## Search & Replace
+### Search & Replace
 _Append `--dry-run` first, then if all looks good, run the command without it._
 
 **_Basic search and replace in all tables. Useful for http->https conversion._**
@@ -68,10 +74,11 @@ Note, also, the `\1\2` in the replacement - this will carry over the slug _and_ 
 
 If there are subcategories, be sure to replace them first!
 
-The sample code below searches only in `wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options` to speed the process.
+The sample code below searches only in `$(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options` to speed the process.
 ```
-wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
-wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2"wp_posts wp_postmeta wp_comments wp_commentmeta wp_term_taxonomy wp_termmeta wp_options --regex --skip-columns=guid --dry-run
+PFX="$(wp db prefix)"
+wp search-replace "https:\/\/domain\.com\/category-name\/subcategory-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" $(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options --regex --skip-columns=guid --dry-run
+wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "https://domain.com/\1\2" $(PFX)posts $(PFX)postmeta $(PFX)comments $(PFX)commentmeta $(PFX)term_taxonomy $(PFX)termmeta $(PFX)options --regex --skip-columns=guid --dry-run
 ```
 
 ## Malware Cleanup
