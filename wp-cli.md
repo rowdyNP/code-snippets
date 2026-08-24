@@ -85,23 +85,37 @@ wp search-replace "https:\/\/domain\.com\/category-name\/(.+?)(\s|\/|'|\"|>)" "h
 
 ## Malware Cleanup
 
-Check core & plugin integrity:
+Not all client sites use the latest WordPress version or the default `en_US` locale. Use these commands to set currently installed WordPress version and active locale as variables for core reinstall commands:
+```
+WP_VERSION="$(wp core version)"
+WP_LOCALE="$(wp language core list --status=active --field=language)"
+```
+
+Check core & (wordpress.org hosted) plugin integrity:
 ```
 wp core verify-checksums
 wp plugin verify-checksums --all --strict
 ```
 
-Quickly reinstall latest version of core files:
-
+### Core Replacement
+Quickly reinstall latest version of core:
 ```
-wp core download --force --skip-content
+wp core download --force --skip-content --locale="$WP_LOCALE"
 ```
 
-If infected/extra files found in `wp-admin` or `wp-includes`, quickly wipe those folders and then immediately reinstall. If working on a production site, run the above reinstall first to be sure that it will work.
-
+If infected/extra files are found in `wp-admin` or `wp-includes`, wipe those folders and then immediately reinstall. If working on a production site, run the above reinstall first to be sure that it will work:
 ```
-rm -rf wp-admin wp-includes
-wp core download --force --skip-content
+rm -rf wp-admin wp-includes && wp core download --force --skip-content
+```
+
+Reinstall the currently installed WordPress core version and active locale:
+```
+wp core download --force --skip-content --version="$WP_VERSION" --locale="$WP_LOCALE"
+```
+
+Reinstall a specific WordPress core version and locale:
+```
+wp core download --force --skip-content --version="7.0" --locale="$WP_LOCALE"
 ```
 
 Reset **all** user passwords. Add `--skip-email` to not send an email notification.
