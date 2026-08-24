@@ -128,25 +128,45 @@ Reinstall all plugins to current versions (premium plugins will error, but not p
 wp plugin list --field=name | xargs -I % sh -c 'v=$(wp plugin get "%" --field=version) && wp plugin install "%" --force --version="$v"'
 ```
 
-Reset **all** user passwords. Add `--skip-email` to not send an email notification.
-
+### User Actions
+List existing (and potentially hidden) users:
 ```
-wp user reset-password $(wp user list --field=user_login)
+wp user list --role=administrator
+wp user list --role=editor
+wp user list --role=author
 ```
 
-Reset administrator and/or editor passwords. Add `--skip-email` to not send an email notification.
+View active session token data for a specific user:
+```
+wp user session list <USER|ID> --fields=login_time,expiration_time,ip,ua
+```
 
+Kill all sessions for a specific user:
+```
+wp user session destroy <USER|ID> --all
+```
+
+Reset **all** user passwords. Add `--skip-email` to not send an email notification:
+```
+wp user reset-password $(wp user list --field=ID)
+```
+
+Reset administrator and/or editor passwords. Add `--skip-email` to not send an email notification:
 ```
 wp user reset-password $(wp user list --field=user_login --role=administrator)
-wp user reset-password $(wp user list --field=user_login --role=editor)
-wp user reset-password $(wp user list --role="administrator" --field=user_login && wp user list --role="editor" --field=user_login)
+wp user reset-password $(wp user list --role=administrator --field=ID && wp user list --role=editor --field=ID)
 ```
 
-Reset a single user's password & display the new password (and don't send an email).
+Reset and display a single user's password without sending an email:
+```
+wp user reset-password <USER|ID> --show-password --skip-email
+```
 
+Refresh/Shuffle wp-config.php salts (Logs out all users):
 ```
-wp user reset-password username --show-password --skip-email
+wp config shuffle-salts
 ```
+
 ## List Info
 
 Get a CSV (post_title,post_date,ID) of published posts inside a certain category.
